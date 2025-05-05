@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { View, StyleSheet } from 'react-native'
 import { useRouter } from 'expo-router'
-import LoadingIndicator from '@/components/ui/LodingIndicator'
+import LoadingIndicator from '@/components/custom/LodingIndicator'
 
 const LoadingScreen = () => {
   const router = useRouter()

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, TouchableOpacity, Text} from 'react-native';
 import {NaverMapView, NaverMapMarkerOverlay} from '@mj-studio/react-native-naver-map';
 import axios from 'axios';
 import {XMLParser} from 'fast-xml-parser';
@@ -29,6 +29,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
                                                                  },
                                                              }) => {
     const [aedData, setAedData] = useState<AedInfo[]>([]);
+    const [showMarkers, setShowMarkers] = useState(true);
 
     useEffect(() => {
         const fetchAedData = async () => {
@@ -40,7 +41,6 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
                 const jsonObj = parser.parse(response.data);
 
                 // 응답 데이터 구조 확인을 위한 로그
-                console.log('API 응답:', jsonObj);
 
                 // tbEmgcAedInfo가 존재하는지 확인
                 if (!jsonObj.tbEmgcAedInfo || !jsonObj.tbEmgcAedInfo.row) {
@@ -78,7 +78,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
                     zoom: initialLocation.zoom,
                 }}
             >
-                {aedData.map((aed, index) => (
+                {showMarkers && aedData.map((aed, index) => (
                     <NaverMapMarkerOverlay
                         key={index}
                         latitude={aed.latitude}
@@ -91,6 +91,14 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
                     />
                 ))}
             </NaverMapView>
+            <TouchableOpacity
+                style={styles.toggleButton}
+                onPress={() => setShowMarkers(!showMarkers)}
+            >
+                <Text style={{ fontSize: 24, opacity: showMarkers ? 1 : 0.4 }}>
+                    ❤️
+                </Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -102,6 +110,15 @@ const styles = StyleSheet.create({
     map: {
         width: '100%',
         height: '100%',
+    },
+    toggleButton: {
+        position: 'absolute',
+        bottom: 20,
+        right: 20,
+        backgroundColor: 'white',
+        borderRadius: 25,
+        padding: 10,
+        elevation: 5,
     },
 });
 

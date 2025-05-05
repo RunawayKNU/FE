@@ -3,12 +3,11 @@ import { View, ScrollView, Text, StyleSheet, Dimensions, Button, PanResponder, A
 import { useRouter } from 'expo-router'
 
 import NaverMapComponent from '@/components/custom/NaverMapComponent'
-
 const { height: SCREEN_HEIGHT } = Dimensions.get('window')
-const MIN_MAP_HEIGHT = SCREEN_HEIGHT * 0.45 // 지도 최소 높이 (화면의 45%)
+const MIN_MAP_HEIGHT = SCREEN_HEIGHT * 0.5 // 지도 최소 높이 (화면의 45%)
 const MAX_MAP_HEIGHT = SCREEN_HEIGHT * 0.8 // 지도 최대 높이 (화면의 80%)
 
-const ShelterScreen = () => {
+const MainScreen = () => {
   const router = useRouter()
   const scrollViewRef = useRef(null)
 
@@ -124,13 +123,9 @@ const ShelterScreen = () => {
   // isExpanded 상태 변화 감지
   useEffect(() => {
     if (isExpanded) {
-      // 패널이 내려갔을 때
-      console.log('패널이 내려갔습니다 - 지도 확장됨')
       // 강제로 올바른 위치 설정
       panY.setValue(MAX_MAP_HEIGHT - MIN_MAP_HEIGHT)
     } else {
-      // 패널이 올라왔을 때
-      console.log('패널이 올라왔습니다 - 지도 축소됨')
       // 강제로 올바른 위치 설정
       panY.setValue(0)
     }
@@ -138,6 +133,7 @@ const ShelterScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* 지도 애니메이션 */}
       {/* 지도 컨테이너 - 애니메이션 적용 */}
       <Animated.View style={[styles.mapContainer, { height: mapHeight }]}>
         <NaverMapComponent style={{ flex: 1 }} />
@@ -146,7 +142,7 @@ const ShelterScreen = () => {
         <View style={styles.buttonContainer}>
           <Button
             title='네이버 맵 테스트'
-            onPress={() => router.push('./NaverMapTest')}
+            onPress={() => router.push('./APITest')}
           />
           <Button
             title='챗봇'
@@ -297,4 +293,4 @@ const styles = StyleSheet.create({
 })
 
 // export default를 추가하여 기본 내보내기 오류 해결
-export default ShelterScreen
+export default MainScreen

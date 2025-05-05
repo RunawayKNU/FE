@@ -18,6 +18,7 @@
       },
       "package": "com.o11117.runaway"
     },
+
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -61,6 +62,10 @@
     "extra": {
       "router": {
         "origin": false
+      },
+      "developer": {
+        "url": false,
+        "projectRoot": false
       },
       "eas": {
         "projectId": "e018ded9-f318-4097-a382-587fdff88aa5"

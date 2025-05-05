@@ -23,6 +23,10 @@ const ShelterScreen = () => {
             title='네이버 맵 테스트'
             onPress={() => router.push('./NaverMapTest')}
           />
+          <Button
+              title='챗봇'
+              onPress={() => router.push('./Chatbot')}
+          />
         </View>
       </View>
 

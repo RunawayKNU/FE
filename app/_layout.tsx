@@ -5,10 +5,14 @@ export default function RootLayout() {
     <Stack>
       <Stack.Screen
         name='LodingScreen'
-        options={{ headerShown: false }}
+        options={{ headerShown: true }}
       />
       <Stack.Screen
         name='(main)/index'
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name='(main)/NaverMapTest'
         options={{ headerShown: false }}
       />
     </Stack>

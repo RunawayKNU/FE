@@ -33,8 +33,28 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "@mj-studio/react-native-naver-map",
+        {
+          "client_id": "w5k9va1w6p",
+          "android": {
+            "ACCESS_FINE_LOCATION": true,
+            "ACCESS_COARSE_LOCATION": true,
+            "ACCESS_BACKGROUND_LOCATION": true
+          }
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraMavenRepos": ["https://repository.map.naver.com/archive/maven"]
+          }
+        }
       ]
     ],
+
     "experiments": {
       "typedRoutes": true
     },

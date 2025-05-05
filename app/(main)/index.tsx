@@ -179,7 +179,7 @@ const MainScreen = () => {
                 <View style={styles.buttonContainer}>
                     <Button
                         title='네이버 맵 테스트'
-                        onPress={() => router.push('./APITest')}
+                        onPress={() => router.push('./NaverMapTest')}
                     />
                     <Button
                         title='챗봇'

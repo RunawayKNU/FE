@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router'
 import axios from 'axios'
 import Constants from 'expo-constants'
 
+
 // 모기 지수 API 응답 타입 정의
 interface MosquitoStatusData {
   MOSQUITO_DATE: string

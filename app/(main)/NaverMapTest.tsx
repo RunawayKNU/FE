@@ -22,7 +22,7 @@ interface AirQualityData {
   PM25: string
 }
 
-function NaverMapTest(): React.JSX.Element {
+function APITest(): React.JSX.Element {
   const router = useRouter()
 
   // 모기
@@ -345,4 +345,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default NaverMapTest
+export default APITest

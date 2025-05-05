@@ -1,40 +1,108 @@
-import React from 'react'
-import { View, StyleSheet } from 'react-native'
-import { NaverMapView } from '@mj-studio/react-native-naver-map'
+import React, {useEffect, useState} from 'react';
+import {View, StyleSheet} from 'react-native';
+import {NaverMapView, NaverMapMarkerOverlay} from '@mj-studio/react-native-naver-map';
+import axios from 'axios';
+import {XMLParser} from 'fast-xml-parser';
 
 interface NaverMapComponentProps {
-  style?: any
-  initialLocation?: {
-    latitude: number
-    longitude: number
-    zoom: number
-  }
+    style?: any;
+    initialLocation?: {
+        latitude: number;
+        longitude: number;
+        zoom: number;
+    };
 }
-// latitude : 위도, longitude : 경도
-// https://medium.com/mj-studio/%EB%A6%AC%EC%95%A1%ED%8A%B8-%EB%84%A4%EC%9D%B4%ED%8A%B8%EB%B8%8C%EB%A1%9C-%EB%84%A4%EC%9D%B4%EB%B2%84-%EC%A7%80%EB%8F%84-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0-2-%EC%B9%B4%EB%A9%94%EB%9D%BC-%EC%9C%84%EC%B9%98-%EC%9D%B4%EB%8F%99%ED%95%98%EA%B8%B0-ea39843b31d2
-const NaverMapComponent: React.FC<NaverMapComponentProps> = ({ style, initialLocation = { latitude: 37.571203, longitude: 126.978974, zoom: 15 } }) => {
-  return (
-    <View style={[styles.container, style]}>
-      <NaverMapView
-        style={styles.map}
-        initialCamera={{
-          latitude: initialLocation.latitude,
-          longitude: initialLocation.longitude,
-          zoom: initialLocation.zoom,
-        }}
-      />
-    </View>
-  )
+
+interface AedInfo {
+    name: string;
+    address: string;
+    latitude: number;
+    longitude: number;
 }
+
+const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
+                                                                 style,
+                                                                 initialLocation = {
+                                                                     latitude: 37.571203,
+                                                                     longitude: 126.978974,
+                                                                     zoom: 15
+                                                                 },
+                                                             }) => {
+    const [aedData, setAedData] = useState<AedInfo[]>([]);
+
+    useEffect(() => {
+        const fetchAedData = async () => {
+            try {
+                const response = await axios.get('http://openapi.seoul.go.kr:8088/6f7641597a72696335384a71746851/xml/tbEmgcAedInfo/1/1000/');
+
+                // fast-xml-parser를 사용해 XML 파싱
+                const parser = new XMLParser();
+                const jsonObj = parser.parse(response.data);
+
+                // 응답 데이터 구조 확인을 위한 로그
+                console.log('API 응답:', jsonObj);
+
+                // tbEmgcAedInfo가 존재하는지 확인
+                if (!jsonObj.tbEmgcAedInfo || !jsonObj.tbEmgcAedInfo.row) {
+                    console.error('tbEmgcAedInfo나 row 데이터가 없습니다.');
+                    return;
+                }
+
+                const rows = Array.isArray(jsonObj.tbEmgcAedInfo.row)
+                    ? jsonObj.tbEmgcAedInfo.row
+                    : [jsonObj.tbEmgcAedInfo.row];
+
+                const parsedData = rows.map((row: any) => ({
+                    name: row.BUILDPLACE || '',
+                    address: row.BUILDADDRESS || '',
+                    latitude: parseFloat(row.WGS84LAT || '0'),
+                    longitude: parseFloat(row.WGS84LON || '0'),
+                }));
+
+                setAedData(parsedData);
+            } catch (error) {
+                console.error('AED 데이터 불러오기 실패:', error);
+            }
+        };
+
+        fetchAedData();
+    }, []);
+
+    return (
+        <View style={[styles.container, style]}>
+            <NaverMapView
+                style={styles.map}
+                initialCamera={{
+                    latitude: initialLocation.latitude,
+                    longitude: initialLocation.longitude,
+                    zoom: initialLocation.zoom,
+                }}
+            >
+                {aedData.map((aed, index) => (
+                    <NaverMapMarkerOverlay
+                        key={index}
+                        latitude={aed.latitude}
+                        longitude={aed.longitude}
+                        caption={{
+                            text: aed.name,
+                            align: 'Bottom',
+                        }}
+                        onTap={() => console.log(aed.address)}
+                    />
+                ))}
+            </NaverMapView>
+        </View>
+    );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  map: {
-    width: '100%',
-    height: '100%',
-  },
-})
+    container: {
+        flex: 1,
+    },
+    map: {
+        width: '100%',
+        height: '100%',
+    },
+});
 
-export default NaverMapComponent
+export default NaverMapComponent;

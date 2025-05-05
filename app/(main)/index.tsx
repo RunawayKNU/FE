@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { View, ScrollView, Text, StyleSheet, Dimensions, Button, PanResponder, Animated, TouchableOpacity } from 'react-native'
+import { View, ScrollView, Text, StyleSheet, Dimensions, Button, PanResponder, Animated, TouchableOpacity, TextInput } from 'react-native'
 import { useRouter } from 'expo-router'
 
 import NaverMapComponent from '@/components/custom/NaverMapComponent'
@@ -18,6 +18,16 @@ const MainScreen = () => {
   const [isDragging, setIsDragging] = useState(false)
   const [isScrollEnabled, setIsScrollEnabled] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
+
+  const [searchQuery, setSearchQuery] = useState('')
+
+  type Shelter = {
+    name: string
+    address: string
+    type: string
+    distance: string
+  }
+  const [filteredShelters, setFilteredShelters] = useState<Shelter[]>([])
 
   // 맵 높이 애니메이션 값
   const mapHeight = panY.interpolate({
@@ -131,6 +141,21 @@ const MainScreen = () => {
     }
   }, [isExpanded])
 
+  useEffect(() => {
+    const allShelters = Array.from({ length: 15 }).map((_, index) => ({
+      name: `대피소 ${index + 1}`,
+      address: `서울시 OO구 OO동 123-${index}`,
+      type: index % 2 === 0 ? '민방위 대피소' : '지진 대피소',
+      distance: `${(index * 0.3 + 0.2).toFixed(1)}km`,
+    }))
+
+    const filtered = allShelters.filter((shelter) =>
+      shelter.name.includes(searchQuery) || shelter.address.includes(searchQuery)
+    )
+
+    setFilteredShelters(filtered)
+  }, [searchQuery])
+
   return (
     <View style={styles.container}>
       {/* 지도 애니메이션 */}
@@ -164,6 +189,57 @@ const MainScreen = () => {
           <Text style={styles.listTitle}>주변 대피소</Text>
         </View>
 
+        {/* 검색창 및 카테고리 버튼 */}
+        <View style={{ backgroundColor: '#fff', paddingHorizontal: 16, paddingBottom: 10 }}>
+          {/* 검색 바 */}
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: '#ccc',
+            borderRadius: 10,
+            paddingHorizontal: 10,
+            marginBottom: 10,
+            height: 40,
+          }}>
+            <Text style={{ fontSize: 16, color: '#888' }}>🔍</Text>
+            <TextInput
+              placeholder="검색어를 입력하세요"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              style={{
+                flex: 1,
+                fontSize: 16,
+                color: '#000',
+              }}
+            />
+          </View>
+
+          {/* 카테고리 버튼 */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 24 }}>🏠</Text>
+              <Text>지진</Text>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 24 }}>🌧️</Text>
+              <Text>수해</Text>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 24 }}>🌫️</Text>
+              <Text>미세먼지</Text>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 24 }}>❄️</Text>
+              <Text>한파</Text>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 24 }}>☀️</Text>
+              <Text>무더위</Text>
+            </View>
+          </View>
+        </View>
+
         {/* 대피소 리스트 스크롤뷰 */}
         <ScrollView
           ref={scrollViewRef}
@@ -171,18 +247,18 @@ const MainScreen = () => {
           scrollEnabled={isScrollEnabled}
           showsVerticalScrollIndicator={true}
         >
-          {Array.from({ length: 15 }).map((_, index) => (
+          {filteredShelters.map((shelter, index) => (
             <TouchableOpacity
               key={index}
               style={styles.card}
               activeOpacity={0.7}
-              onPress={() => console.log(`대피소 ${index + 1} 선택됨`)}
+              onPress={() => console.log(`${shelter.name} 선택됨`)}
             >
-              <Text style={styles.name}>대피소 {index + 1}</Text>
-              <Text style={styles.addr}>서울시 OO구 OO동 123-{index}</Text>
+              <Text style={styles.name}>{shelter.name}</Text>
+              <Text style={styles.addr}>{shelter.address}</Text>
               <View style={styles.footer}>
-                <Text style={styles.type}>{index % 2 === 0 ? '민방위 대피소' : '지진 대피소'}</Text>
-                <Text style={styles.distance}>{(index * 0.3 + 0.2).toFixed(1)}km</Text>
+                <Text style={styles.type}>{shelter.type}</Text>
+                <Text style={styles.distance}>{shelter.distance}</Text>
               </View>
             </TouchableOpacity>
           ))}

@@ -1,23 +1,33 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, ScrollView, StyleSheet } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import axios from 'axios';
+
+const presetQuestion = [
+    '집에 불이 났어요!',
+    '지진이 발생했어요!',
+    '미세먼지가 심할 때 어떻게 해야하나요?',
+    '열사병에 걸렸어요!'
+]
+
+const presetLabels = [
+    '화재 발생 시 대처법',
+    '지진 발생 시 행동 요령',
+    '미세먼지 심할 때 행동 요령',
+    '열사병 응급처치 방법'
+];
 
 const Chatbot = () => {
     const [messages, setMessages] = useState<string[]>([]);
     const [input, setInput] = useState('');
 
-    const handleSend = async () => {
-        if (!input.trim()) return;
-
-        const newMessages = [...messages, `🙋 You: ${input}`];
-        setMessages(newMessages);
-        setInput('');
-
+    const sendMessage = async (question: string, label?: string) => {
+        setMessages(prev => [...prev, `🙋 You: ${question || label}`]);
         try {
             const response = await axios.post("https://clovastudio.stream.ntruss.com/testapp/v3/chat-completions/HCX-005", {
                 messages: [
                     { role: 'system', content: '' },
-                    { role: 'user', content: input }
+                    { role: 'user', content: question }
                 ],
                 topP: 0.8,
                 topK: 0,
@@ -41,10 +51,16 @@ const Chatbot = () => {
             console.error(error);
             setMessages(prev => [...prev, '❌ 오류가 발생했습니다.']);
         }
+        setInput('');
+    };
+    const handleSend = () => {
+        if (!input.trim()) return;
+        sendMessage(input);
     };
 
     return (
         <View style={styles.container}>
+
             <ScrollView style={styles.chatBox}>
                 {messages.map((msg, index) => (
                     <Text
@@ -55,6 +71,14 @@ const Chatbot = () => {
                     </Text>
                 ))}
             </ScrollView>
+
+            <View style={styles.faqContainer}>
+                {presetLabels.map((label, index) => (
+                    <TouchableOpacity key={index} onPress={() => {sendMessage(presetQuestion[index], label); setInput('');}}>
+                        <Text style={styles.faqItem}>{presetQuestion[index]}</Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
 
             <View style={styles.inputRow}>
                 <TextInput
@@ -133,4 +157,22 @@ const styles = StyleSheet.create({
         marginRight: 10,
         backgroundColor: '#fafafa',
     },
+    faqContainer: {
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        padding: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    faqItem: {
+        padding: 10,
+        marginVertical: 4,
+        backgroundColor: '#fafafa',
+        borderRadius: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+    }
 });

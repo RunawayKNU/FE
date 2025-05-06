@@ -11,8 +11,11 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
+  Share,
+  ActivityIndicator,
 } from 'react-native'
 import { useRouter } from 'expo-router'
+import axios from 'axios'
 
 import NaverMapComponent from '@/components/custom/NaverMapComponent'
 
@@ -31,8 +34,6 @@ const MainScreen = () => {
   const [isDragging, setIsDragging] = useState(false)
   const [isScrollEnabled, setIsScrollEnabled] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
-
-  const [searchQuery, setSearchQuery] = useState('')
 
   const [showMosquitoInfo, setShowMosquitoInfo] = useState(false)
   const [showDustInfo, setShowDustInfo] = useState(false)
@@ -176,6 +177,142 @@ const MainScreen = () => {
     }
   }, [isExpanded])
 
+  const MY_IP = process.env.EXPO_PUBLIC_MY_IP || 'YOUR_DEFAULT_IP'
+
+  // 원본 데이터와 필터링된 데이터를 분리하여 무한 루프 방지
+  const [coldPlacesOriginal, setColdPlacesOriginal] = useState<any[]>([])
+  const [hotPlacesOriginal, setHotPlacesOriginal] = useState<any[]>([])
+  const [earthquakePlacesOriginal, setEarthquakePlacesOriginal] = useState<any[]>([])
+  const [dustPlacesOriginal, setDustPlacesOriginal] = useState<any[]>([])
+
+  const [coldfilterPlaces, setColdfilterPlaces] = useState<any[]>([])
+  const [hotfilterPlaces, setHotfilterPlaces] = useState<any[]>([])
+  const [earthquakefilterPlaces, setEarthquakefilterPlaces] = useState<any[]>([])
+  const [dustfilterPlaces, setDustfilterPlaces] = useState<any[]>([])
+  // 상태 추가
+  const [searchQuery, setSearchQuery] = useState<string>('')
+
+  // 검색 함수 수정 - 두 가지 데이터 형식 모두 처리하도록 수정
+  const filterPlaces = (places: any[], query: string): any[] => {
+    if (!query.trim()) return places // 검색어가 없으면 전체 반환
+
+    return places.filter((place) => {
+      // fcltNm이 있으면 사용하고, 없으면 name을 사용
+      const name = place.fcltNm || place.name || ''
+      // addr이 있으면 사용하고, 없으면 address를 사용
+      const address = place.addr || place.address || ''
+
+      return (
+        name.toLowerCase().includes(query.toLowerCase()) ||
+        address.toLowerCase().includes(query.toLowerCase())
+      )
+    })
+  }
+
+  // 검색어 변경 시 필터링 적용
+  useEffect(() => {
+    // 원본 데이터에서 필터링
+    setColdfilterPlaces(filterPlaces(coldPlacesOriginal, searchQuery))
+    setHotfilterPlaces(filterPlaces(hotPlacesOriginal, searchQuery))
+    setEarthquakefilterPlaces(filterPlaces(earthquakePlacesOriginal, searchQuery))
+    setDustfilterPlaces(filterPlaces(dustPlacesOriginal, searchQuery))
+  }, [
+    searchQuery,
+    coldPlacesOriginal,
+    hotPlacesOriginal,
+    earthquakePlacesOriginal,
+    dustPlacesOriginal,
+  ])
+
+  // -- 데이터 가져오기 --
+  // 한파대피소 데이터 가져오기
+  useEffect(() => {
+    const fetchColdPlaces = async () => {
+      try {
+        const response = await axios.get(`http://${MY_IP}:8080/api/coldplaces/all`)
+        const parsedColdPlaces = response.data.map((item: any) => ({
+          fcltNm: item.fcltNm || '', // API 응답의 필드 이름과 일치시킴
+          addr: item.addr || '',
+          latitude: item.latitude || 0,
+          longitude: item.longitude || 0,
+        }))
+        setColdPlacesOriginal(parsedColdPlaces) // 원본 데이터 저장
+        setColdfilterPlaces(parsedColdPlaces) // 초기 필터링된 데이터도 동일하게 설정
+        console.log('index한파대피소 데이터 불러오기 성공')
+      } catch (error) {
+        console.error('한파대피소 데이터 불러오기 실패:', error)
+      }
+    }
+
+    fetchColdPlaces()
+  }, [])
+
+  // 폭염대피소 데이터 가져오기
+  useEffect(() => {
+    const fetchHotPlaces = async () => {
+      try {
+        const response = await axios.get(`http://${MY_IP}:8080/api/hotplaces/all`)
+        const parsedHotPlaces = response.data.map((item: any) => ({
+          fcltNm: item.fcltNm || '',
+          addr: item.addr || '',
+          latitude: item.latitude || 0,
+          longitude: item.longitude || 0,
+        }))
+        setHotPlacesOriginal(parsedHotPlaces)
+        setHotfilterPlaces(parsedHotPlaces)
+        console.log('index폭염대피소 데이터 불러오기 성공')
+      } catch (error) {
+        console.error('폭염대피소 데이터 불러오기 실패:', error)
+      }
+    }
+
+    fetchHotPlaces()
+  }, [])
+
+  // 지진대피소 데이터 가져오기
+  useEffect(() => {
+    const fetchEarthquakePlaces = async () => {
+      try {
+        const response = await axios.get(`http://${MY_IP}:8080/api/earthquakeplaces/all`)
+        const parsedEarthquakePlaces = response.data.map((item: any) => ({
+          name: item.fcltNm || '',
+          address: item.addr || '',
+          latitude: item.latitude || 0, // Note: check for swapped lat/lng
+          longitude: item.longitude || 0,
+        }))
+        setEarthquakefilterPlaces(parsedEarthquakePlaces)
+        setEarthquakePlacesOriginal(parsedEarthquakePlaces) // 원본 데이터 저장
+        console.log('index지진대피소 데이터 불러오기 성공')
+      } catch (error) {
+        console.error('지진진대피소 데이터 불러오기 실패:', error)
+      }
+    }
+
+    fetchEarthquakePlaces()
+  }, [])
+
+  // 미세먼지대피소 데이터 가져오기
+  useEffect(() => {
+    const fetchDustPlaces = async () => {
+      try {
+        const response = await axios.get(`http://${MY_IP}:8080/api/dustplaces/all`)
+        const parsedDustPlaces = response.data.map((item: any) => ({
+          name: item.fcltNm || '',
+          address: item.addr || '',
+          latitude: item.latitude || 0, // Note: check for swapped lat/lng
+          longitude: item.longitude || 0,
+        }))
+        setDustfilterPlaces(parsedDustPlaces)
+        setDustPlacesOriginal(parsedDustPlaces) // 원본 데이터 저장
+        console.log('index미세먼지대피소 데이터 불러오기 성공')
+      } catch (error) {
+        console.error('미세먼지대피소 데이터 불러오기 실패:', error)
+      }
+    }
+
+    fetchDustPlaces()
+  }, [])
+
   useEffect(() => {
     const allShelters = Array.from({ length: 15 }).map((_, index) => ({
       name: `대피소 ${index + 1}`,
@@ -190,6 +327,50 @@ const MainScreen = () => {
 
     setFilteredShelters(filtered)
   }, [searchQuery])
+
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [visibleItems, setVisibleItems] = useState(10) // 처음 보여줄 아이템 수
+
+  // 스크롤 이벤트 핸들러 - 스크롤이 끝에 도달하면 더 많은 아이템 보여주기
+  const handleScroll = (event: any) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent
+
+    // 스크롤이 90% 이상 내려갔을 때 추가 로드 (더 일찍 트리거)
+    const scrollPercentage = (layoutMeasurement.height + contentOffset.y) / contentSize.height
+
+    if (scrollPercentage > 0.8 && !loadingMore) {
+      loadMoreItems()
+    }
+  }
+
+  // 더 많은 아이템 로딩 함수 개선
+  const loadMoreItems = () => {
+    // 현재 표시되는 아이템 수 확인
+    const totalItems = (() => {
+      let count = 0
+      if (showColdMarkers) count += coldfilterPlaces.length
+      if (showHotMarkers) count += hotfilterPlaces.length
+      if (showEarthquakeMarkers) count += earthquakefilterPlaces.length
+      if (showDustMarkers) count += dustfilterPlaces.length
+      return count
+    })()
+
+    // 현재 보여지는 아이템 수가 총 아이템 수보다 작을 때만 로딩 시작
+    if (visibleItems < totalItems) {
+      setLoadingMore(true)
+
+      console.log('로드 시작: visibleItems =', visibleItems, ', totalItems =', totalItems)
+
+      // 로딩 효과를 위한 지연
+      setTimeout(() => {
+        setVisibleItems((prevVisibleItems) => prevVisibleItems + 10) // 한번에 10개씩 추가 로드
+        setLoadingMore(false)
+        console.log('로드 완료: 새 visibleItems =', visibleItems + 10)
+      }, 300)
+    } else {
+      console.log('모든 아이템이 이미 로드됨:', visibleItems, '>=', totalItems)
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -322,6 +503,7 @@ const MainScreen = () => {
                 style={{ alignItems: 'center' }}
                 onPress={() => {
                   setShowEarthquakeMarkers((prev: boolean) => !prev)
+                  setVisibleItems(10) // 초기 아이템 수로 리셋
                   console.log('setShowEarthquakeMarkers Clicked: ', showEarthquakeMarkers)
                 }}
               >
@@ -342,11 +524,12 @@ const MainScreen = () => {
 
             <View style={{ alignItems: 'center' }}>
               <TouchableOpacity
-                  style={{ alignItems: 'center' }}
-                  onPress={() => {
-                    setShowDustMarkers((prev: boolean) => !prev)
-                    console.log('setShowDustMarkers Clicked: ', showDustMarkers)
-                  }}
+                style={{ alignItems: 'center' }}
+                onPress={() => {
+                  setShowDustMarkers((prev: boolean) => !prev)
+                  setVisibleItems(10) // 초기 아이템 수로 리셋
+                  console.log('setShowDustMarkers Clicked: ', showDustMarkers)
+                }}
               >
                 <Text style={{ fontSize: 20, opacity: showDustMarkers ? 1 : 0.4 }}>🌫️</Text>
                 <Text>미세먼지</Text>
@@ -358,6 +541,7 @@ const MainScreen = () => {
                 style={{ alignItems: 'center' }}
                 onPress={() => {
                   setShowColdMarkers((prev: boolean) => !prev)
+                  setVisibleItems(10) // 초기 아이템 수로 리셋
                   console.log('setShowColdMarkers Clicked: ', showColdMarkers)
                 }}
               >
@@ -371,6 +555,7 @@ const MainScreen = () => {
                 style={{ alignItems: 'center' }}
                 onPress={() => {
                   setShowHotMarkers((prev: boolean) => !prev)
+                  setVisibleItems(10) // 초기 아이템 수로 리셋
                   console.log('setShowHotMarkers Clicked: ', showHotMarkers)
                 }}
               >
@@ -387,22 +572,111 @@ const MainScreen = () => {
           style={styles.listContainer}
           scrollEnabled={isScrollEnabled}
           showsVerticalScrollIndicator={true}
+          onStartShouldSetResponder={() => false}
+          onScroll={handleScroll} // 스크롤 이벤트 핸들러 추가
+          scrollEventThrottle={400} // 스크롤 이벤트 호출 빈도 조절
         >
-          {filteredShelters.map((shelter, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.card}
-              activeOpacity={0.7}
-              onPress={() => console.log(`${shelter.name} 선택됨`)}
-            >
-              <Text style={styles.name}>{shelter.name}</Text>
-              <Text style={styles.addr}>{shelter.address}</Text>
-              <View style={styles.footer}>
-                <Text style={styles.type}>{shelter.type}</Text>
-                <Text style={styles.distance}>{shelter.distance}</Text>
+          {/* 한파 대피소 */}
+          {showColdMarkers &&
+            coldfilterPlaces.slice(0, visibleItems).map((shelter, index) => (
+              <TouchableOpacity
+                key={`cold-${index}`}
+                style={[styles.card, { borderLeftWidth: 4, borderLeftColor: '#4285F4' }]}
+                activeOpacity={0.7}
+                onPress={() => console.log(`${shelter.fcltNm} 선택됨`)}
+              >
+                <Text style={styles.name}>{shelter.fcltNm}</Text>
+                <Text style={styles.addr}>{shelter.addr}</Text>
+                <View style={styles.footer}>
+                  <Text style={[styles.type, { backgroundColor: '#E3F2FD' }]}>한파 대피소</Text>
+                  <Text style={styles.distance}>{shelter.distance || '거리 정보 없음'}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+
+          {/* 폭염 대피소 */}
+          {showHotMarkers &&
+            hotfilterPlaces.slice(0, visibleItems).map((shelter, index) => (
+              <TouchableOpacity
+                key={`hot-${index}`}
+                style={[styles.card, { borderLeftWidth: 4, borderLeftColor: '#EA4335' }]} // 빨간색 테두리로 폭염 대피소 구분
+                activeOpacity={0.7}
+                onPress={() => console.log(`${shelter.fcltNm} 선택됨`)}
+              >
+                <Text style={styles.name}>{shelter.fcltNm}</Text>
+                <Text style={styles.addr}>{shelter.addr}</Text>
+                <View style={styles.footer}>
+                  <Text style={[styles.type, { backgroundColor: '#FFEBEE' }]}>폭염 대피소</Text>
+                  <Text style={styles.distance}>{shelter.distance || '거리 정보 없음'}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+
+          {/* 지진 대피소 */}
+          {showEarthquakeMarkers &&
+            earthquakefilterPlaces.slice(0, visibleItems).map((shelter, index) => (
+              <TouchableOpacity
+                key={`earthquake-${index}`}
+                style={[styles.card, { borderLeftWidth: 4, borderLeftColor: '#FBBC05' }]} // 노란색 테두리로 지진 대피소 구분
+                activeOpacity={0.7}
+                onPress={() => console.log(`${shelter.name} 선택됨`)}
+              >
+                <Text style={styles.name}>{shelter.name}</Text>
+                <Text style={styles.addr}>{shelter.address}</Text>
+                <View style={styles.footer}>
+                  <Text style={[styles.type, { backgroundColor: '#FFF9C4' }]}>지진 대피소</Text>
+                  <Text style={styles.distance}>{shelter.distance || '거리 정보 없음'}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+
+          {/* 미세먼지 대피소 */}
+          {showDustMarkers &&
+            dustfilterPlaces.slice(0, visibleItems).map((shelter, index) => (
+              <TouchableOpacity
+                key={`dust-${index}`}
+                style={[styles.card, { borderLeftWidth: 4, borderLeftColor: '#34A853' }]} // 초록색 테두리로 미세먼지 대피소 구분
+                activeOpacity={0.7}
+                onPress={() => console.log(`${shelter.name} 선택됨`)}
+              >
+                <Text style={styles.name}>{shelter.name}</Text>
+                <Text style={styles.addr}>{shelter.address}</Text>
+                <View style={styles.footer}>
+                  <Text style={[styles.type, { backgroundColor: '#E8F5E9' }]}>미세먼지 대피소</Text>
+                  <Text style={styles.distance}>{shelter.distance || '거리 정보 없음'}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+
+          {/* 데이터가 없을 경우 메시지 표시 */}
+          {!showColdMarkers && !showHotMarkers && !showEarthquakeMarkers && !showDustMarkers && (
+            <View style={styles.noDataContainer}>
+              <Text style={styles.noDataText}>대피소 유형을 선택해주세요</Text>
+            </View>
+          )}
+
+          {/* 필터링된 대피소가 없을 경우 메시지 표시 */}
+          {(showColdMarkers || showHotMarkers || showEarthquakeMarkers || showDustMarkers) &&
+            coldfilterPlaces.length === 0 &&
+            hotfilterPlaces.length === 0 &&
+            earthquakefilterPlaces.length === 0 &&
+            dustfilterPlaces.length === 0 && (
+              <View style={styles.noDataContainer}>
+                <Text style={styles.noDataText}>검색 결과가 없습니다</Text>
               </View>
-            </TouchableOpacity>
-          ))}
+            )}
+
+          {/* 로딩 인디케이터 */}
+          {loadingMore && (
+            <View style={{ padding: 10, alignItems: 'center' }}>
+              <ActivityIndicator
+                size='small'
+                color='#4a89f3'
+              />
+              <Text style={{ marginTop: 5, color: '#888' }}>더 불러오는 중...</Text>
+            </View>
+          )}
+
           {/* 스크롤을 위한 여분의 공간 */}
           <View style={{ height: 50 }} />
         </ScrollView>
@@ -526,6 +800,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: 'bold',
     color: '#4a89f3',
+  },
+  noDataContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: '#888',
+    textAlign: 'center',
   },
 })
 

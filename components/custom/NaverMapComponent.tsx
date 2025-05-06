@@ -89,6 +89,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   const [hotPlaces, setHotPlaces] = useState<HotInfo[]>([])
   const [earthquakePlaces, setEarthquakePlaces] = useState<EarthquakeInfo[]>([])
   const [dustPlaces, setDustPlaces] = useState<DustInfo[]>([])
+
   const [visibleAedMarkers, setVisibleAedMarkers] = useState<AedInfo[]>([])
   const [visibleColdMarkers, setVisibleColdMarkers] = useState<ColdInfo[]>([])
   const [visibleHotMarkers, setVisibleHotMarkers] = useState<HotInfo[]>([])
@@ -100,6 +101,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   const [loading, setLoading] = useState(true)
 
   const API_KEY = process.env.EXPO_PUBLIC_SEOUL_API_KEY || 'YOUR_DEFAULT_API_KEY'
+  const MY_IP = process.env.EXPO_PUBLIC_MY_IP || 'YOUR_DEFAULT_IP'
 
   const fetchData = async () => {
     setLoading(true)
@@ -181,7 +183,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   useEffect(() => {
     const fetchColdPlaces = async () => {
       try {
-        const response = await axios.get('http://192.168.0.18:8080/api/coldplaces/all')
+        const response = await axios.get(`http://${MY_IP}:8080/api/coldplaces/all`)
         const parsedColdPlaces = response.data.map((item: any) => ({
           name: item.fcltNm || '',
           address: item.addr || '',
@@ -202,7 +204,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   useEffect(() => {
     const fetchHotPlaces = async () => {
       try {
-        const response = await axios.get('http://192.168.0.18:8080/api/hotplaces/all')
+        const response = await axios.get(`http://${MY_IP}:8080/api/hotplaces/all`)
         const parsedHotPlaces = response.data.map((item: any) => ({
           name: item.fcltNm || '',
           address: item.addr || '',
@@ -223,7 +225,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   useEffect(() => {
     const fetchEarthquakePlaces = async () => {
       try {
-        const response = await axios.get('http://192.168.0.18:8080/api/earthquakeplaces/all')
+        const response = await axios.get(`http://${MY_IP}:8080/api/earthquakeplaces/all`)
         const parsedEarthquakePlaces = response.data.map((item: any) => ({
           name: item.fcltNm || '',
           address: item.addr || '',
@@ -233,7 +235,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
         setEarthquakePlaces(parsedEarthquakePlaces)
         console.log('지진대피소 데이터 불러오기 성공')
       } catch (error) {
-        console.error('폭염대피소 데이터 불러오기 실패:', error)
+        console.error('지진진대피소 데이터 불러오기 실패:', error)
       }
     }
 
@@ -244,7 +246,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   useEffect(() => {
     const fetchDustPlaces = async () => {
       try {
-        const response = await axios.get('http://192.168.45.20:8080/api/dustplaces/all')
+        const response = await axios.get(`http://${MY_IP}:8080/api/dustplaces/all`)
         const parsedDustPlaces = response.data.map((item: any) => ({
           name: item.fcltNm || '',
           address: item.addr || '',
@@ -252,9 +254,9 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
           longitude: item.longitude || 0,
         }))
         setDustPlaces(parsedDustPlaces)
-        console.log('Cold Places:', parsedDustPlaces)
+        console.log('미세먼지대피소 데이터 불러오기 성공')
       } catch (error) {
-        console.error('한파대피소 데이터 불러오기 실패:', error)
+        console.error('미세먼지대피소 데이터 불러오기 실패:', error)
       }
     }
 
@@ -270,6 +272,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
           longitude: initialLocation.longitude,
           zoom: initialLocation.zoom,
         }}
+        isShowLocationButton={true}
         onCameraChanged={(event) => {
           const region = event.region
           // console.log('Camera Region:', region)

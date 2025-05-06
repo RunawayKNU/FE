@@ -28,6 +28,7 @@ interface NaverMapComponentProps {
   showColdMarkers?: boolean
   showMosquitoInfo?: boolean
   showHotMarkers?: boolean
+  showEarthquakeMarkers?: boolean
   showDustInfo?: boolean
 }
 
@@ -51,6 +52,13 @@ interface HotInfo {
   latitude: number
   longitude: number
 }
+
+interface EarthquakeInfo {
+  name: string
+  address: string
+  latitude: number
+  longitude: number
+}
 const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   style,
   initialLocation = {
@@ -65,14 +73,17 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   showAedMarkers = false,
   showColdMarkers = false,
   showHotMarkers = false,
+    showEarthquakeMarkers = false,
 }) => {
   const [aedData, setAedData] = useState<AedInfo[]>([])
   const [coldPlaces, setColdPlaces] = useState<ColdInfo[]>([])
   const [hotPlaces, setHotPlaces] = useState<HotInfo[]>([])
+  const [earthquakePlaces, setEarthquakePlaces] = useState<EarthquakeInfo[]>([])
 
   const [visibleAedMarkers, setVisibleAedMarkers] = useState<AedInfo[]>([])
   const [visibleColdMarkers, setVisibleColdMarkers] = useState<ColdInfo[]>([])
   const [visibleHotMarkers, setVisibleHotMarkers] = useState<HotInfo[]>([])
+  const [visibleEarthquakeMarkers, setVisibleEarthquakeMarkers] = useState<EarthquakeInfo[]>([])
 
   const [mosquitoData, setMosquitoData] = useState<MosquitoStatusData | null>(null)
   const [airData, setAirData] = useState<AirQualityData | null>(null)
@@ -160,7 +171,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   useEffect(() => {
     const fetchColdPlaces = async () => {
       try {
-        const response = await axios.get('http://192.168.0.18:8080/api/coldplaces/all')
+        const response = await axios.get('http://192.168.45.20:8080/api/coldplaces/all')
         const parsedColdPlaces = response.data.map((item: any) => ({
           name: item.fcltNm || '',
           address: item.addr || '',
@@ -181,7 +192,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   useEffect(() => {
     const fetchHotPlaces = async () => {
       try {
-        const response = await axios.get('http://192.168.0.18:8080/api/hotplaces/all')
+        const response = await axios.get('http://192.168.45.20:8080/api/hotplaces/all')
         const parsedHotPlaces = response.data.map((item: any) => ({
           name: item.fcltNm || '',
           address: item.addr || '',
@@ -189,13 +200,34 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
           longitude: item.longitude || 0,
         }))
         setHotPlaces(parsedHotPlaces)
-        console.log('Cold Places:', parsedHotPlaces)
+        console.log('Hot Places:', parsedHotPlaces)
       } catch (error) {
         console.error('폭염대피소 데이터 불러오기 실패:', error)
       }
     }
 
     fetchHotPlaces()
+  }, [])
+
+  // 지진대피소 데이터 가져오기
+  useEffect(() => {
+    const fetchEarthquakePlaces = async () => {
+      try {
+        const response = await axios.get('http://192.168.45.20:8080/api/earthquakeplaces/all')
+        const parsedEarthquakePlaces = response.data.map((item: any) => ({
+          name: item.fcltNm || '',
+          address: item.addr || '',
+          latitude: item.latitude || 0, // Note: check for swapped lat/lng
+          longitude: item.longitude || 0,
+        }))
+        setEarthquakePlaces(parsedEarthquakePlaces)
+        console.log('Earthquake Places:', parsedEarthquakePlaces)
+      } catch (error) {
+        console.error('폭염대피소 데이터 불러오기 실패:', error)
+      }
+    }
+
+    fetchEarthquakePlaces()
   }, [])
 
   return (
@@ -252,9 +284,18 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
               place.longitude <= bounds.northEast.longitude
           )
 
+          const visibleEarthquakes = earthquakePlaces.filter(
+              (place) =>
+                  place.latitude >= bounds.southWest.latitude &&
+                  place.latitude <= bounds.northEast.latitude &&
+                  place.longitude >= bounds.southWest.longitude &&
+                  place.longitude <= bounds.northEast.longitude
+          )
+
           setVisibleAedMarkers(visibleAeds)
           setVisibleColdMarkers(visibleColds)
           setVisibleHotMarkers(visibleHots)
+          setVisibleEarthquakeMarkers(visibleEarthquakes)
         }}
       >
         {showAedMarkers &&
@@ -305,6 +346,22 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
               onTap={() => console.log(place.address)}
             />
           ))}
+        {showEarthquakeMarkers &&
+            visibleEarthquakeMarkers.map((place, index) => (
+                <NaverMapMarkerOverlay
+                    key={`earthquake-${index}`}
+                    latitude={place.latitude}
+                    longitude={place.longitude}
+                    caption={{
+                      text: place.name,
+                      align: 'Bottom',
+                      textSize: 10,
+                    }}
+                    width={20}
+                    height={30}
+                    onTap={() => console.log(place.address)}
+                />
+            ))}
       </NaverMapView>
       <View style={styles.overlay}>
         {/* <View style={[styles.badge, { backgroundColor: getAirQualityColor(airData?.GRADE) }]}>

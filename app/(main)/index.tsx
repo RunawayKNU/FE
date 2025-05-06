@@ -39,6 +39,7 @@ const MainScreen = () => {
   const [showAedMarkers, setShowAedMarkers] = useState<boolean>(false)
   const [showColdMarkers, setShowColdMarkers] = useState<boolean>(false)
   const [showHotMarkers, setShowHotMarkers] = useState<boolean>(false)
+  const [showEarthquakeMarkers, setShowEarthquakeMarkers] = useState<boolean>(false)
   const handleMosquitoButtonPress = () => {
     setShowMosquitoInfo(true) // 모기 지수 표시
     setTimeout(() => {
@@ -200,6 +201,7 @@ const MainScreen = () => {
           showAedMarkers={showAedMarkers}
           showColdMarkers={showColdMarkers}
           showHotMarkers={showHotMarkers}
+          showEarthquakeMarkers={showEarthquakeMarkers}
           showDustInfo={showDustInfo}
         />
 
@@ -294,8 +296,16 @@ const MainScreen = () => {
           {/* 카테고리 버튼 */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 24 }}>🏠</Text>
-              <Text>지진</Text>
+              <TouchableOpacity
+                  style={{ alignItems: 'center' }}
+                  onPress={() => {
+                    setShowEarthquakeMarkers((prev: boolean) => !prev)
+                    console.log('setShowEarthquakeMarkers Clicked: ', showEarthquakeMarkers)
+                  }}
+              >
+                <Text style={{ fontSize: 20, opacity: showEarthquakeMarkers ? 1 : 0.4 }}>🏠</Text>
+                <Text>지진</Text>
+              </TouchableOpacity>
             </View>
 
             <View style={{ alignItems: 'center' }}>

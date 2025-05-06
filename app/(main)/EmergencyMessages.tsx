@@ -92,10 +92,12 @@ const EmergencyMessages = () => {
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Button
-          title='뒤로'
-          onPress={() => router.back()}
-        />
+        <TouchableOpacity style={styles.backButton}
+        onPress={() => router.back()}>
+        <Text style={styles.backButtonText}>←</Text>
+        </TouchableOpacity>
+      
+
         <Text style={styles.title}>📢 재난 문자 알림</Text>
       </View>
 
@@ -169,6 +171,15 @@ const styles = StyleSheet.create({
   controls: {
     flexDirection: 'row',
     marginBottom: 16,
+  },
+  backButton:{
+    padding: 10,
+    backgroundColor: 'rgba(75, 78, 109, 1)',
+  },
+  backButtonText: {
+    fontSize: 20,
+    fontWeight:'bold',
+    color: "#d32f2f"
   },
   dropdownButton: {
     borderWidth: 1,

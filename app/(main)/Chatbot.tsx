@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, ScrollView, StyleSheet } from 'react-native';
 import { TouchableOpacity } from 'react-native';
+import { router, useRouter } from 'expo-router'
 import axios from 'axios';
 
 const presetQuestion = [
@@ -60,6 +61,10 @@ const Chatbot = () => {
 
     return (
         <View style={styles.container}>
+            <TouchableOpacity style={styles.backButton}
+            onPress={() => router.back()}>
+            <Text style={styles.backButtonText}>←</Text>
+        </TouchableOpacity>
 
             <ScrollView style={styles.chatBox}>
                 {messages.map((msg, index) => (
@@ -114,6 +119,15 @@ const styles = StyleSheet.create({
         elevation: 2,
         borderColor: '#868AB0',
     },
+    backButton:{
+        padding: 10,
+        backgroundColor: 'rgba(75, 78, 109, 1)',
+      },
+      backButtonText: {
+        fontSize: 20,
+        fontWeight:'bold',
+        color: "#d32f2f"
+      },
     userMessage: {
         alignSelf: 'flex-end',
         marginVertical: 6,

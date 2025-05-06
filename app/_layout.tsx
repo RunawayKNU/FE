@@ -24,6 +24,15 @@ export default function RootLayout() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name='(main)/EmergencyMessages'
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name='(main)/Chatbot'
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
           name='(main)/APITest'
           options={{ headerShown: false }}
         />

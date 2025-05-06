@@ -314,10 +314,8 @@ const MainScreen = () => {
                             </TouchableOpacity>
                         </View>
                         <View style={{alignItems: 'center'}}>
-                            <TouchableOpacity style={{alignItems:'center'}} onPress={() => setShowColdMarkers((prev: boolean) => !prev)}>
-                                <Text style={{fontSize: 20, opacity: showColdMarkers ? 1 : 0.4}}>❄️</Text>
-                                <Text>한파</Text>
-                            </TouchableOpacity>
+                            <Text style={{fontSize: 24}}>☀️</Text>
+                            <Text>무더위</Text>
                         </View>
                     </View>
                     <View style={styles.buttonContainer}>

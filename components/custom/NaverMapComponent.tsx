@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from 'react-native'
 import { NaverMapView, NaverMapMarkerOverlay } from '@mj-studio/react-native-naver-map'
 import axios from 'axios'
+import { Share, Linking } from 'react-native'
 import { XMLParser } from 'fast-xml-parser'
 
 interface MosquitoStatusData {
@@ -263,6 +264,9 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
     fetchDustPlaces()
   }, [])
 
+  const [selectedMarker, setSelectedMarker] = useState<any | null>(null)
+  const [showModal, setShowModal] = useState(false)
+
   return (
     <View style={[styles.container, style]}>
       <NaverMapView
@@ -342,19 +346,23 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
         }}
       >
         {showAedMarkers &&
-          visibleAedMarkers.map((aed, index) => (
+          visibleAedMarkers.map((place, index) => (
             <NaverMapMarkerOverlay
               key={index}
-              latitude={aed.latitude}
-              longitude={aed.longitude}
+              latitude={place.latitude}
+              longitude={place.longitude}
               caption={{
-                text: aed.name,
+                text: place.name,
                 align: 'Bottom',
-                textSize: 10, // Adjust the text size to make it smaller
+                textSize: 10,
               }}
-              width={20} // Adjust the marker width
-              height={30} // Adjust the marker height
-              onTap={() => console.log(aed.address)}
+              width={20}
+              height={30}
+              onTap={() => {
+                console.log(place.address)
+                setSelectedMarker(place)
+                setShowModal(true)
+              }}
             />
           ))}
         {showColdMarkers &&
@@ -370,7 +378,11 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
               }}
               width={20}
               height={30}
-              onTap={() => console.log(place.address)}
+              onTap={() => {
+                console.log(place.address)
+                setSelectedMarker(place)
+                setShowModal(true)
+              }}
             />
           ))}
         {showHotMarkers &&
@@ -386,7 +398,12 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
               }}
               width={20}
               height={30}
-              onTap={() => console.log(place.address)}
+              onTap={() => {
+                console.log(place.address)
+                setSelectedMarker(place)
+
+                setShowModal(true)
+              }}
             />
           ))}
         {showEarthquakeMarkers &&
@@ -402,7 +419,11 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
               }}
               width={20}
               height={30}
-              onTap={() => console.log(place.address)}
+              onTap={() => {
+                console.log(place.address)
+                setSelectedMarker(place)
+                setShowModal(true)
+              }}
             />
           ))}
         {showDustMarkers &&
@@ -418,10 +439,66 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
               }}
               width={20}
               height={30}
-              onTap={() => console.log(place.address)}
+              onTap={() => {
+                console.log(place.address)
+                setSelectedMarker(place)
+                setShowModal(true)
+              }}
             />
           ))}
       </NaverMapView>
+      {/* 모달 */}
+      {showModal && selectedMarker && (
+        <View style={styles.modalContainer}>
+          <View style={styles.modal}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{selectedMarker.name}</Text>
+              <TouchableOpacity onPress={() => setShowModal(false)}>
+                <Text style={styles.closeButton}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalAddress}>{selectedMarker.address}</Text>
+            <Text style={styles.modalAddress}>위도: {selectedMarker.latitude}</Text>
+            <Text style={styles.modalAddress}>경도: {selectedMarker.longitude}</Text>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  // 공유 기능
+                  Share.share({
+                    message: `${selectedMarker.name}\n
+                      주소: ${selectedMarker.address}\n
+                      위도: ${selectedMarker.latitude},\n
+                      경도: ${selectedMarker.longitude}`,
+                  }).then((result) => console.log(result))
+
+                  setShowModal(false)
+                }}
+              >
+                <Text style={styles.actionButtonText}>공유</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  // 네이버 지도 앱이나 웹으로 연결
+                  setShowModal(false)
+                  const webUrl = `https://map.naver.com/v5/search/${encodeURIComponent(
+                    selectedMarker.name
+                  )}?c=${selectedMarker.longitude},${selectedMarker.latitude},15,0,0,0,dh`
+                  Linking.openURL(webUrl)
+                  console.log('길찾기:', webUrl)
+                }}
+              >
+                <Text style={styles.actionButtonText}>길찾기</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+
       <View style={styles.overlay}>
         {/* <View style={[styles.badge, { backgroundColor: getAirQualityColor(airData?.GRADE) }]}>
           <Text style={styles.badgeText}>{airData?.GRADE || 'N/A'}</Text>
@@ -518,6 +595,69 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 6,
+  },
+  //
+  // styles에 추가
+  modalContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modal: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    maxWidth: 350,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    flex: 1,
+  },
+  closeButton: {
+    fontSize: 20,
+    color: '#888',
+    padding: 5,
+  },
+  modalAddress: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 15,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+  actionButton: {
+    backgroundColor: '#4a89f3',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    color: 'white',
+    fontWeight: '500',
   },
 })
 

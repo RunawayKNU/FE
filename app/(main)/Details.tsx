@@ -5,6 +5,8 @@ import { useRouter } from 'expo-router'
 import axios from 'axios'
 import Constants from 'expo-constants'
 
+import { Share } from 'react-native'
+
 // 모기 지수 API 응답 타입 정의
 interface MosquitoStatusData {
   MOSQUITO_DATE: string
@@ -37,6 +39,15 @@ function APITest(): React.JSX.Element {
 
   // 서울시 공공 데이터 API 키 가져오기
   const SEOUL_API_KEY = process.env.EXPO_PUBLIC_SEOUL_API_KEY
+
+  const share = () => {
+    Share.share({
+      message: `${airData?.PM10} μg/m³ + ${airData?.PM25} μg/m³ 니까 조심하세요!!
+      `,
+    })
+      .then((result) => console.log(result))
+      .catch((error) => console.log('Error sharing:', error))
+  }
 
   // 서울시 모기 지수 API
   // https://data.seoul.go.kr/dataList/OA-13285/S/1/datasetView.do
@@ -146,6 +157,7 @@ function APITest(): React.JSX.Element {
       <ScrollView style={styles.dataContainer}>
         {/* 모기 지수 섹션 */}
         <Text style={styles.sectionTitle}>서울시 모기 지수 데이터</Text>
+
         {mosquitoLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator
@@ -182,6 +194,11 @@ function APITest(): React.JSX.Element {
         <View style={styles.sectionDivider} />
 
         {/* 대기질 섹션 */}
+
+        <Button
+          title='미세먼지 지수 공유하기'
+          onPress={share}
+        />
         <Text style={styles.sectionTitle}>서울시 실시간 대기질 정보</Text>
         {airLoading ? (
           <View style={styles.loadingContainer}>

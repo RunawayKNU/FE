@@ -76,13 +76,13 @@ const MainScreen = () => {
 
       onMoveShouldSetPanResponder: (_, gestureState) => {
         // 수직 드래그만 감지
-        return Math.abs(gestureState.dy) > Math.abs(gestureState.dx * 3)
+        return Math.abs(gestureState.dy) > Math.abs(gestureState.dx * 3) && !isScrollEnabled
       },
 
       // 드래그 시작 시 호출되는 함수
       onPanResponderGrant: () => {
         setIsDragging(true)
-        setIsScrollEnabled(false)
+        setIsScrollEnabled(true)
       },
 
       // 드래그 중 호출되는 함수 - 드래그 방향에 따라 값을 조정
@@ -115,7 +115,7 @@ const MainScreen = () => {
             useNativeDriver: false,
           }).start(() => {
             setIsExpanded(true)
-            setIsScrollEnabled(false) // 대피소 리스트가 축소된 상태에서는 스크롤 비활성화
+            setIsScrollEnabled(true) // 대피소 리스트가 축소된 상태에서는 스크롤 비활성화
           })
         }
         // 위로 드래그한 경우 (음수 dy)
@@ -139,7 +139,7 @@ const MainScreen = () => {
             friction: 10,
             useNativeDriver: false,
           }).start(() => {
-            setIsScrollEnabled(!isExpanded)
+            setIsScrollEnabled(true)
           })
         }
       },

@@ -81,8 +81,8 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   showAedMarkers = false,
   showColdMarkers = false,
   showHotMarkers = false,
-    showEarthquakeMarkers = false,
-    showDustMarkers = false,
+  showEarthquakeMarkers = false,
+  showDustMarkers = false,
 }) => {
   const [aedData, setAedData] = useState<AedInfo[]>([])
   const [coldPlaces, setColdPlaces] = useState<ColdInfo[]>([])
@@ -181,7 +181,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   useEffect(() => {
     const fetchColdPlaces = async () => {
       try {
-        const response = await axios.get('http://192.168.45.20:8080/api/coldplaces/all')
+        const response = await axios.get('http://192.168.0.18:8080/api/coldplaces/all')
         const parsedColdPlaces = response.data.map((item: any) => ({
           name: item.fcltNm || '',
           address: item.addr || '',
@@ -189,7 +189,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
           longitude: item.longitude || 0,
         }))
         setColdPlaces(parsedColdPlaces)
-        console.log('Cold Places:', parsedColdPlaces)
+        console.log('한파대피소 데이터 불러오기 성공')
       } catch (error) {
         console.error('한파대피소 데이터 불러오기 실패:', error)
       }
@@ -202,7 +202,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   useEffect(() => {
     const fetchHotPlaces = async () => {
       try {
-        const response = await axios.get('http://192.168.45.20:8080/api/hotplaces/all')
+        const response = await axios.get('http://192.168.0.18:8080/api/hotplaces/all')
         const parsedHotPlaces = response.data.map((item: any) => ({
           name: item.fcltNm || '',
           address: item.addr || '',
@@ -210,7 +210,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
           longitude: item.longitude || 0,
         }))
         setHotPlaces(parsedHotPlaces)
-        console.log('Hot Places:', parsedHotPlaces)
+        console.log('폭염대피소 데이터 불러오기 성공')
       } catch (error) {
         console.error('폭염대피소 데이터 불러오기 실패:', error)
       }
@@ -223,7 +223,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   useEffect(() => {
     const fetchEarthquakePlaces = async () => {
       try {
-        const response = await axios.get('http://192.168.45.20:8080/api/earthquakeplaces/all')
+        const response = await axios.get('http://192.168.0.18:8080/api/earthquakeplaces/all')
         const parsedEarthquakePlaces = response.data.map((item: any) => ({
           name: item.fcltNm || '',
           address: item.addr || '',
@@ -231,7 +231,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
           longitude: item.longitude || 0,
         }))
         setEarthquakePlaces(parsedEarthquakePlaces)
-        console.log('Earthquake Places:', parsedEarthquakePlaces)
+        console.log('지진대피소 데이터 불러오기 성공')
       } catch (error) {
         console.error('폭염대피소 데이터 불러오기 실패:', error)
       }
@@ -316,19 +316,19 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
           )
 
           const visibleEarthquakes = earthquakePlaces.filter(
-              (place) =>
-                  place.latitude >= bounds.southWest.latitude &&
-                  place.latitude <= bounds.northEast.latitude &&
-                  place.longitude >= bounds.southWest.longitude &&
-                  place.longitude <= bounds.northEast.longitude
+            (place) =>
+              place.latitude >= bounds.southWest.latitude &&
+              place.latitude <= bounds.northEast.latitude &&
+              place.longitude >= bounds.southWest.longitude &&
+              place.longitude <= bounds.northEast.longitude
           )
 
           const visibleDust = dustPlaces.filter(
-              (place) =>
-                  place.latitude >= bounds.southWest.latitude &&
-                  place.latitude <= bounds.northEast.latitude &&
-                  place.longitude >= bounds.southWest.longitude &&
-                  place.longitude <= bounds.northEast.longitude
+            (place) =>
+              place.latitude >= bounds.southWest.latitude &&
+              place.latitude <= bounds.northEast.latitude &&
+              place.longitude >= bounds.southWest.longitude &&
+              place.longitude <= bounds.northEast.longitude
           )
 
           setVisibleAedMarkers(visibleAeds)
@@ -387,37 +387,37 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
             />
           ))}
         {showEarthquakeMarkers &&
-            visibleEarthquakeMarkers.map((place, index) => (
-                <NaverMapMarkerOverlay
-                    key={`earthquake-${index}`}
-                    latitude={place.latitude}
-                    longitude={place.longitude}
-                    caption={{
-                      text: place.name,
-                      align: 'Bottom',
-                      textSize: 10,
-                    }}
-                    width={20}
-                    height={30}
-                    onTap={() => console.log(place.address)}
-                />
-            ))}
+          visibleEarthquakeMarkers.map((place, index) => (
+            <NaverMapMarkerOverlay
+              key={`earthquake-${index}`}
+              latitude={place.latitude}
+              longitude={place.longitude}
+              caption={{
+                text: place.name,
+                align: 'Bottom',
+                textSize: 10,
+              }}
+              width={20}
+              height={30}
+              onTap={() => console.log(place.address)}
+            />
+          ))}
         {showDustMarkers &&
-            visibleDustMarkers.map((place, index) => (
-                <NaverMapMarkerOverlay
-                    key={`dust-${index}`}
-                    latitude={place.latitude}
-                    longitude={place.longitude}
-                    caption={{
-                      text: place.name,
-                      align: 'Bottom',
-                      textSize: 10,
-                    }}
-                    width={20}
-                    height={30}
-                    onTap={() => console.log(place.address)}
-                />
-            ))}
+          visibleDustMarkers.map((place, index) => (
+            <NaverMapMarkerOverlay
+              key={`dust-${index}`}
+              latitude={place.latitude}
+              longitude={place.longitude}
+              caption={{
+                text: place.name,
+                align: 'Bottom',
+                textSize: 10,
+              }}
+              width={20}
+              height={30}
+              onTap={() => console.log(place.address)}
+            />
+          ))}
       </NaverMapView>
       <View style={styles.overlay}>
         {/* <View style={[styles.badge, { backgroundColor: getAirQualityColor(airData?.GRADE) }]}>

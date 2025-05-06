@@ -249,6 +249,26 @@ const MainScreen = () => {
           </TouchableOpacity>
         </View>
 
+        <TouchableOpacity
+          style={[styles.statusButtons, { position: 'absolute', bottom: 100, right: '3%' }]}
+          onPress={() => router.push('./Details')}
+        >
+          <Image
+            source={require('@/assets/images/detailIcon.png')}
+            style={{ width: 35, height: 35 }}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.statusButtons, { position: 'absolute', bottom: 45, right: '3%' }]}
+          onPress={() => router.push('./EmergencyMessages')}
+        >
+          <Image
+            source={require('@/assets/images/emergencyIcon.png')}
+            style={{ width: 35, height: 35 }}
+          />
+        </TouchableOpacity>
+
         {/* 지도 테스트 버튼 - 지도 위에 절대 위치로 표시 */}
       </Animated.View>
 
@@ -297,11 +317,11 @@ const MainScreen = () => {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <View style={{ alignItems: 'center' }}>
               <TouchableOpacity
-                  style={{ alignItems: 'center' }}
-                  onPress={() => {
-                    setShowEarthquakeMarkers((prev: boolean) => !prev)
-                    console.log('setShowEarthquakeMarkers Clicked: ', showEarthquakeMarkers)
-                  }}
+                style={{ alignItems: 'center' }}
+                onPress={() => {
+                  setShowEarthquakeMarkers((prev: boolean) => !prev)
+                  console.log('setShowEarthquakeMarkers Clicked: ', showEarthquakeMarkers)
+                }}
               >
                 <Text style={{ fontSize: 20, opacity: showEarthquakeMarkers ? 1 : 0.4 }}>🏠</Text>
                 <Text>지진</Text>
@@ -348,17 +368,6 @@ const MainScreen = () => {
                 <Text>무더위</Text>
               </TouchableOpacity>
             </View>
-          </View>
-          <View style={styles.buttonContainer}>
-            <Button
-              title='API 테스트'
-              onPress={() => router.push('./APITest')}
-            />
-
-            <Button
-              title='긴급 재난 문자'
-              onPress={() => router.push('/EmergencyMessages')}
-            />
           </View>
         </View>
 

@@ -33,7 +33,7 @@ export default function RootLayout() {
         />
 
         <Stack.Screen
-          name='(main)/APITest'
+          name='(main)/Details'
           options={{ headerShown: false }}
         />
       </Stack>

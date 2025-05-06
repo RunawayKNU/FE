@@ -5,7 +5,6 @@ import { useRouter } from 'expo-router'
 import axios from 'axios'
 import Constants from 'expo-constants'
 
-
 // 모기 지수 API 응답 타입 정의
 interface MosquitoStatusData {
   MOSQUITO_DATE: string
@@ -49,10 +48,14 @@ function APITest(): React.JSX.Element {
       const today = new Date()
       const padNumber = (num: number) => (num < 10 ? `0${num}` : `${num}`)
       // -1 해서 어제 date 로 설정정
-      const formattedDate: string = `${today.getFullYear()}-${padNumber(today.getMonth() + 1)}-${padNumber(today.getDate() - 1)}`
+      const formattedDate: string = `${today.getFullYear()}-${padNumber(
+        today.getMonth() + 1
+      )}-${padNumber(today.getDate() - 1)}`
 
       // 서울 공공데이터 - 모기 지수 API
-      const response = await axios.get(`http://openapi.seoul.go.kr:8088/${SEOUL_API_KEY}/json/MosquitoStatus/1/5/${formattedDate}`)
+      const response = await axios.get(
+        `http://openapi.seoul.go.kr:8088/${SEOUL_API_KEY}/json/MosquitoStatus/1/5/${formattedDate}`
+      )
 
       if (response.data?.MosquitoStatus?.row?.length > 0) {
         setMosquitoData(response.data.MosquitoStatus.row[0])
@@ -76,7 +79,9 @@ function APITest(): React.JSX.Element {
 
     try {
       // 서울시 대기질 API 호출
-      const response = await axios.get(`http://openAPI.seoul.go.kr:8088/${SEOUL_API_KEY}/json/ListAvgOfSeoulAirQualityService/1/1/`)
+      const response = await axios.get(
+        `http://openAPI.seoul.go.kr:8088/${SEOUL_API_KEY}/json/ListAvgOfSeoulAirQualityService/1/1/`
+      )
 
       if (response.data?.ListAvgOfSeoulAirQualityService?.row?.length > 0) {
         setAirData(response.data.ListAvgOfSeoulAirQualityService.row[0])
@@ -192,7 +197,12 @@ function APITest(): React.JSX.Element {
           </View>
         ) : airData ? (
           <View style={styles.dataCard}>
-            <View style={[styles.gradeIndicator, { backgroundColor: getAirQualityColor(airData.GRADE) }]}>
+            <View
+              style={[
+                styles.gradeIndicator,
+                { backgroundColor: getAirQualityColor(airData.GRADE) },
+              ]}
+            >
               <Text style={styles.gradeText}>{airData.GRADE}</Text>
             </View>
 

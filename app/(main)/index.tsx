@@ -40,6 +40,7 @@ const MainScreen = () => {
   const [showColdMarkers, setShowColdMarkers] = useState<boolean>(false)
   const [showHotMarkers, setShowHotMarkers] = useState<boolean>(false)
   const [showEarthquakeMarkers, setShowEarthquakeMarkers] = useState<boolean>(false)
+  const [showDustMarkers, setShowDustMarkers] = useState<boolean>(false)
   const handleMosquitoButtonPress = () => {
     setShowMosquitoInfo(true) // 모기 지수 표시
     setTimeout(() => {
@@ -202,6 +203,7 @@ const MainScreen = () => {
           showColdMarkers={showColdMarkers}
           showHotMarkers={showHotMarkers}
           showEarthquakeMarkers={showEarthquakeMarkers}
+          showDustMarkers={showDustMarkers}
           showDustInfo={showDustInfo}
         />
 
@@ -339,8 +341,16 @@ const MainScreen = () => {
             </View>
 
             <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 24 }}>🌫️</Text>
-              <Text>미세먼지</Text>
+              <TouchableOpacity
+                  style={{ alignItems: 'center' }}
+                  onPress={() => {
+                    setShowDustMarkers((prev: boolean) => !prev)
+                    console.log('setShowDustMarkers Clicked: ', showDustMarkers)
+                  }}
+              >
+                <Text style={{ fontSize: 20, opacity: showDustMarkers ? 1 : 0.4 }}>🌫️</Text>
+                <Text>미세먼지</Text>
+              </TouchableOpacity>
             </View>
 
             <View style={{ alignItems: 'center' }}>

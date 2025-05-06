@@ -30,6 +30,7 @@ interface NaverMapComponentProps {
   showHotMarkers?: boolean
   showEarthquakeMarkers?: boolean
   showDustInfo?: boolean
+  showDustMarkers?: boolean
 }
 
 interface AedInfo {
@@ -59,6 +60,13 @@ interface EarthquakeInfo {
   latitude: number
   longitude: number
 }
+
+interface DustInfo {
+  name: string
+  address: string
+  latitude: number
+  longitude: number
+}
 const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   style,
   initialLocation = {
@@ -74,16 +82,18 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   showColdMarkers = false,
   showHotMarkers = false,
     showEarthquakeMarkers = false,
+    showDustMarkers = false,
 }) => {
   const [aedData, setAedData] = useState<AedInfo[]>([])
   const [coldPlaces, setColdPlaces] = useState<ColdInfo[]>([])
   const [hotPlaces, setHotPlaces] = useState<HotInfo[]>([])
   const [earthquakePlaces, setEarthquakePlaces] = useState<EarthquakeInfo[]>([])
-
+  const [dustPlaces, setDustPlaces] = useState<DustInfo[]>([])
   const [visibleAedMarkers, setVisibleAedMarkers] = useState<AedInfo[]>([])
   const [visibleColdMarkers, setVisibleColdMarkers] = useState<ColdInfo[]>([])
   const [visibleHotMarkers, setVisibleHotMarkers] = useState<HotInfo[]>([])
   const [visibleEarthquakeMarkers, setVisibleEarthquakeMarkers] = useState<EarthquakeInfo[]>([])
+  const [visibleDustMarkers, setVisibleDustMarkers] = useState<DustInfo[]>([])
 
   const [mosquitoData, setMosquitoData] = useState<MosquitoStatusData | null>(null)
   const [airData, setAirData] = useState<AirQualityData | null>(null)
@@ -230,6 +240,27 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
     fetchEarthquakePlaces()
   }, [])
 
+  // 미세먼지대피소 데이터 가져오기
+  useEffect(() => {
+    const fetchDustPlaces = async () => {
+      try {
+        const response = await axios.get('http://192.168.45.20:8080/api/dustplaces/all')
+        const parsedDustPlaces = response.data.map((item: any) => ({
+          name: item.fcltNm || '',
+          address: item.addr || '',
+          latitude: item.latitude || 0, // Note: check for swapped lat/lng
+          longitude: item.longitude || 0,
+        }))
+        setDustPlaces(parsedDustPlaces)
+        console.log('Cold Places:', parsedDustPlaces)
+      } catch (error) {
+        console.error('한파대피소 데이터 불러오기 실패:', error)
+      }
+    }
+
+    fetchDustPlaces()
+  }, [])
+
   return (
     <View style={[styles.container, style]}>
       <NaverMapView
@@ -292,10 +323,19 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
                   place.longitude <= bounds.northEast.longitude
           )
 
+          const visibleDust = dustPlaces.filter(
+              (place) =>
+                  place.latitude >= bounds.southWest.latitude &&
+                  place.latitude <= bounds.northEast.latitude &&
+                  place.longitude >= bounds.southWest.longitude &&
+                  place.longitude <= bounds.northEast.longitude
+          )
+
           setVisibleAedMarkers(visibleAeds)
           setVisibleColdMarkers(visibleColds)
           setVisibleHotMarkers(visibleHots)
           setVisibleEarthquakeMarkers(visibleEarthquakes)
+          setVisibleDustMarkers(visibleDust)
         }}
       >
         {showAedMarkers &&
@@ -350,6 +390,22 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
             visibleEarthquakeMarkers.map((place, index) => (
                 <NaverMapMarkerOverlay
                     key={`earthquake-${index}`}
+                    latitude={place.latitude}
+                    longitude={place.longitude}
+                    caption={{
+                      text: place.name,
+                      align: 'Bottom',
+                      textSize: 10,
+                    }}
+                    width={20}
+                    height={30}
+                    onTap={() => console.log(place.address)}
+                />
+            ))}
+        {showDustMarkers &&
+            visibleDustMarkers.map((place, index) => (
+                <NaverMapMarkerOverlay
+                    key={`dust-${index}`}
                     latitude={place.latitude}
                     longitude={place.longitude}
                     caption={{

@@ -52,8 +52,6 @@ interface HotInfo {
   longitude: number
 }
 const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
-    showAedMarkers = true,
-    showColdMarkers = true,
   style,
   initialLocation = {
     // 기본 멋쟁이사자처럼 본사 광화문 좌표
@@ -62,9 +60,11 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
     zoom: 15,
   },
   showMosquitoInfo = true,
-  showHotMarkers = true,
-
   showDustInfo = true,
+
+  showAedMarkers = false,
+  showColdMarkers = false,
+  showHotMarkers = false,
 }) => {
   const [aedData, setAedData] = useState<AedInfo[]>([])
   const [coldPlaces, setColdPlaces] = useState<ColdInfo[]>([])
@@ -160,14 +160,15 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   useEffect(() => {
     const fetchColdPlaces = async () => {
       try {
-        const response = await axios.get('http://192.168.45.20:8080/api/coldplaces/all')
+        const response = await axios.get('http://192.168.0.18:8080/api/coldplaces/all')
         const parsedColdPlaces = response.data.map((item: any) => ({
           name: item.fcltNm || '',
           address: item.addr || '',
-          latitude: item.longitude || 0, // Note: check for swapped lat/lng
-          longitude: item.latitude || 0,
+          latitude: item.latitude || 0, // Note: check for swapped lat/lng
+          longitude: item.longitude || 0,
         }))
         setColdPlaces(parsedColdPlaces)
+        console.log('Cold Places:', parsedColdPlaces)
       } catch (error) {
         console.error('한파대피소 데이터 불러오기 실패:', error)
       }
@@ -180,14 +181,15 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
   useEffect(() => {
     const fetchHotPlaces = async () => {
       try {
-        const response = await axios.get('http://192.168.45.20:8080/api/hotplaces/all')
+        const response = await axios.get('http://192.168.0.18:8080/api/hotplaces/all')
         const parsedHotPlaces = response.data.map((item: any) => ({
           name: item.fcltNm || '',
           address: item.addr || '',
-          latitude: item.longitude || 0, // Note: check for swapped lat/lng
-          longitude: item.latitude || 0,
+          latitude: item.latitude || 0, // Note: check for swapped lat/lng
+          longitude: item.longitude || 0,
         }))
         setHotPlaces(parsedHotPlaces)
+        console.log('Cold Places:', parsedHotPlaces)
       } catch (error) {
         console.error('폭염대피소 데이터 불러오기 실패:', error)
       }
@@ -207,7 +209,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
         }}
         onCameraChanged={(event) => {
           const region = event.region
-          console.log('Camera Region:', region)
+          // console.log('Camera Region:', region)
           const { latitude, longitude, latitudeDelta, longitudeDelta } = region
 
           // 여유를 추가한 남서쪽(southWest)와 북동쪽(northEast) 좌표 계산
@@ -223,7 +225,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
             },
           }
 
-          console.log('Calculated Bounds with Padding:', bounds)
+          // console.log('Calculated Bounds with Padding:', bounds)
 
           // 가시 영역 내 마커 필터링
           const visibleAeds = aedData.filter(

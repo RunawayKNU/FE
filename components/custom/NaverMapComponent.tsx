@@ -24,9 +24,11 @@ interface NaverMapComponentProps {
     longitude: number
     zoom: number
   }
+  showAedMarkers?: boolean
+  showColdMarkers?: boolean
   showMosquitoInfo?: boolean
+  showHotMarkers?: boolean
   showDustInfo?: boolean
-  showMarkers?: boolean
 }
 
 interface AedInfo {
@@ -36,8 +38,22 @@ interface AedInfo {
   longitude: number
 }
 
+interface ColdInfo {
+  name: string
+  address: string
+  latitude: number
+  longitude: number
+}
+
+interface HotInfo {
+  name: string
+  address: string
+  latitude: number
+  longitude: number
+}
 const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
-  showMarkers = true,
+    showAedMarkers = true,
+    showColdMarkers = true,
   style,
   initialLocation = {
     // 기본 멋쟁이사자처럼 본사 광화문 좌표
@@ -46,11 +62,17 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
     zoom: 15,
   },
   showMosquitoInfo = true,
+  showHotMarkers = true,
+
   showDustInfo = true,
 }) => {
   const [aedData, setAedData] = useState<AedInfo[]>([])
+  const [coldPlaces, setColdPlaces] = useState<ColdInfo[]>([])
+  const [hotPlaces, setHotPlaces] = useState<HotInfo[]>([])
 
-  const [visibleMarkers, setVisibleMarkers] = useState<AedInfo[]>([])
+  const [visibleAedMarkers, setVisibleAedMarkers] = useState<AedInfo[]>([])
+  const [visibleColdMarkers, setVisibleColdMarkers] = useState<ColdInfo[]>([])
+  const [visibleHotMarkers, setVisibleHotMarkers] = useState<HotInfo[]>([])
 
   const [mosquitoData, setMosquitoData] = useState<MosquitoStatusData | null>(null)
   const [airData, setAirData] = useState<AirQualityData | null>(null)
@@ -134,6 +156,46 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
     fetchAedData()
   }, [])
 
+  // 한파대피소 데이터 가져오기
+  useEffect(() => {
+    const fetchColdPlaces = async () => {
+      try {
+        const response = await axios.get('http://192.168.45.20:8080/api/coldplaces/all')
+        const parsedColdPlaces = response.data.map((item: any) => ({
+          name: item.fcltNm || '',
+          address: item.addr || '',
+          latitude: item.longitude || 0, // Note: check for swapped lat/lng
+          longitude: item.latitude || 0,
+        }))
+        setColdPlaces(parsedColdPlaces)
+      } catch (error) {
+        console.error('한파대피소 데이터 불러오기 실패:', error)
+      }
+    }
+
+    fetchColdPlaces()
+  }, [])
+
+  // 폭염대피소 데이터 가져오기
+  useEffect(() => {
+    const fetchHotPlaces = async () => {
+      try {
+        const response = await axios.get('http://192.168.45.20:8080/api/hotplaces/all')
+        const parsedHotPlaces = response.data.map((item: any) => ({
+          name: item.fcltNm || '',
+          address: item.addr || '',
+          latitude: item.longitude || 0, // Note: check for swapped lat/lng
+          longitude: item.latitude || 0,
+        }))
+        setHotPlaces(parsedHotPlaces)
+      } catch (error) {
+        console.error('폭염대피소 데이터 불러오기 실패:', error)
+      }
+    }
+
+    fetchHotPlaces()
+  }, [])
+
   return (
     <View style={[styles.container, style]}>
       <NaverMapView
@@ -164,7 +226,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
           console.log('Calculated Bounds with Padding:', bounds)
 
           // 가시 영역 내 마커 필터링
-          const visibleMarkers = aedData.filter(
+          const visibleAeds = aedData.filter(
             (aed) =>
               aed.latitude >= bounds.southWest.latitude &&
               aed.latitude <= bounds.northEast.latitude &&
@@ -172,11 +234,29 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
               aed.longitude <= bounds.northEast.longitude
           )
 
-          setVisibleMarkers(visibleMarkers) // 가시 영역 내 마커만 상태로 저장
+          const visibleColds = coldPlaces.filter(
+            (place) =>
+              place.latitude >= bounds.southWest.latitude &&
+              place.latitude <= bounds.northEast.latitude &&
+              place.longitude >= bounds.southWest.longitude &&
+              place.longitude <= bounds.northEast.longitude
+          )
+
+          const visibleHots = hotPlaces.filter(
+            (place) =>
+              place.latitude >= bounds.southWest.latitude &&
+              place.latitude <= bounds.northEast.latitude &&
+              place.longitude >= bounds.southWest.longitude &&
+              place.longitude <= bounds.northEast.longitude
+          )
+
+          setVisibleAedMarkers(visibleAeds)
+          setVisibleColdMarkers(visibleColds)
+          setVisibleHotMarkers(visibleHots)
         }}
       >
-        {showMarkers &&
-          visibleMarkers.map((aed, index) => (
+        {showAedMarkers &&
+          visibleAedMarkers.map((aed, index) => (
             <NaverMapMarkerOverlay
               key={index}
               latitude={aed.latitude}
@@ -189,6 +269,38 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
               width={20} // Adjust the marker width
               height={30} // Adjust the marker height
               onTap={() => console.log(aed.address)}
+            />
+          ))}
+        {showColdMarkers &&
+          visibleColdMarkers.map((place, index) => (
+            <NaverMapMarkerOverlay
+              key={`cold-${index}`}
+              latitude={place.latitude}
+              longitude={place.longitude}
+              caption={{
+                text: place.name,
+                align: 'Bottom',
+                textSize: 10,
+              }}
+              width={20}
+              height={30}
+              onTap={() => console.log(place.address)}
+            />
+          ))}
+        {showHotMarkers &&
+          visibleHotMarkers.map((place, index) => (
+            <NaverMapMarkerOverlay
+              key={`hot-${index}`}
+              latitude={place.latitude}
+              longitude={place.longitude}
+              caption={{
+                text: place.name,
+                align: 'Bottom',
+                textSize: 10,
+              }}
+              width={20}
+              height={30}
+              onTap={() => console.log(place.address)}
             />
           ))}
       </NaverMapView>

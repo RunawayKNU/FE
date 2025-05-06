@@ -34,24 +34,23 @@ const MainScreen = () => {
 
   const [searchQuery, setSearchQuery] = useState('')
 
-  const [showMosquitoInfo, setShowMosquitoInfo] = useState(false)
-  const [showDustInfo, setShowDustInfo] = useState(false)
-
-  const [showMarkers, setShowMarkers] = useState<boolean>(true)
-
-  const handleMosquitoButtonPress = () => {
-    setShowMosquitoInfo(true) // 모기 지수 표시
-    setTimeout(() => {
-      setShowMosquitoInfo(false) // 5초 후 숨기기
-    }, 5000)
-  }
-
-  const handleDustButtonPress = () => {
-    setShowDustInfo(true) // 미세먼지 지수 표시
-    setTimeout(() => {
-      setShowDustInfo(false) // 5초 후 숨기기
-    }, 5000)
-  }
+    const [showMosquitoInfo, setShowMosquitoInfo] = useState(false)
+    const [showDustInfo, setShowDustInfo] = useState(false)
+    const [showAedMarkers, setShowAedMarkers] = useState<boolean>(true)
+    const [showColdMarkers, setShowColdMarkers] = useState<boolean>(true)
+    const [showHotMarkers, setShowHotMarkers] = useState<boolean>(true)
+    const handleMosquitoButtonPress = () => {
+        setShowMosquitoInfo(true) // 모기 지수 표시
+        setTimeout(() => {
+            setShowMosquitoInfo(false) // 5초 후 숨기기
+        }, 5000)
+    }
+    const handleDustButtonPress = () => {
+        setShowDustInfo(true) // 미세먼지 지수 표시
+        setTimeout(() => {
+            setShowDustInfo(false) // 5초 후 숨기기
+        }, 5000)
+    }
 
   type Shelter = {
     name: string
@@ -190,16 +189,19 @@ const MainScreen = () => {
     setFilteredShelters(filtered)
   }, [searchQuery])
 
-  return (
-    <View style={styles.container}>
-      {/* 지도 컨테이너 - 애니메이션 적용 */}
-      <Animated.View style={[styles.mapContainer, { height: mapHeight }]}>
-        <NaverMapComponent
-          style={{ flex: 1 }}
-          showMosquitoInfo={showMosquitoInfo}
-          showDustInfo={showDustInfo}
-          showMarkers={showMarkers}
-        />
+    return (
+        <View style={styles.container}>
+            {/* 지도 애니메이션 */}
+            {/* 지도 컨테이너 - 애니메이션 적용 */}
+            <Animated.View style={[styles.mapContainer, {height: mapHeight}]}>
+                <NaverMapComponent
+                    style={{flex: 1}}
+                    showMosquitoInfo={showMosquitoInfo}
+                    showAedMarkers={showAedMarkers}
+                    showColdMarkers={showColdMarkers}
+                    showHotMarkers={showHotMarkers}
+                    showDustInfo={showDustInfo}
+                />
 
         <View style={styles.statusBar}>
           {/* 미세먼지 */}
@@ -289,39 +291,40 @@ const MainScreen = () => {
             />
           </View>
 
-          {/* 카테고리 버튼 */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 24 }}>🏠</Text>
-              <Text>지진</Text>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <TouchableOpacity
-                style={{ alignItems: 'center' }}
-                onPress={() => setShowMarkers((prev: boolean) => !prev)}
-              >
-                <Text style={{ fontSize: 20, opacity: showMarkers ? 1 : 0.4 }}>❤️</Text>
-                <Text>AED</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 24 }}>🌫️</Text>
-              <Text>미세먼지</Text>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 24 }}>❄️</Text>
-              <Text>한파</Text>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 24 }}>☀️</Text>
-              <Text>무더위</Text>
-            </View>
-          </View>
-          <View style={styles.buttonContainer}>
-            <Button
-              title='API 테스트'
-              onPress={() => router.push('./APITest')}
-            />
+                    {/* 카테고리 버튼 */}
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                        <View style={{alignItems: 'center'}}>
+                            <Text style={{fontSize: 24}}>🏠</Text>
+                            <Text>지진</Text>
+                        </View>
+                        <View style={{alignItems: 'center'}}>
+                            <TouchableOpacity style={{alignItems:'center'}} onPress={() => setShowAedMarkers((prev: boolean) => !prev)}>
+                                <Text style={{fontSize: 20, opacity: showAedMarkers ? 1 : 0.4}}>❤️</Text>
+                                <Text>AED</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{alignItems: 'center'}}>
+                            <Text style={{fontSize: 24}}>🌫️</Text>
+                            <Text>미세먼지</Text>
+                        </View>
+                        <View style={{alignItems: 'center'}}>
+                            <TouchableOpacity style={{alignItems:'center'}} onPress={() => setShowColdMarkers((prev: boolean) => !prev)}>
+                                <Text style={{fontSize: 20, opacity: showColdMarkers ? 1 : 0.4}}>❄️</Text>
+                                <Text>한파</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{alignItems: 'center'}}>
+                            <TouchableOpacity style={{alignItems:'center'}} onPress={() => setShowColdMarkers((prev: boolean) => !prev)}>
+                                <Text style={{fontSize: 20, opacity: showColdMarkers ? 1 : 0.4}}>❄️</Text>
+                                <Text>한파</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    <View style={styles.buttonContainer}>
+                        <Button
+                            title='API 테스트'
+                            onPress={() => router.push('./APITest')}
+                        />
 
             <Button
               title='긴급 재난 문자'

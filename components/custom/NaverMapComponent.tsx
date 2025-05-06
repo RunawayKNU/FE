@@ -25,6 +25,7 @@ interface NaverMapComponentProps {
     zoom: number
   }
   showMosquitoInfo?: boolean
+  showMarkers?: boolean
 }
 
 interface AedInfo {
@@ -35,6 +36,7 @@ interface AedInfo {
 }
 
 const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
+    showMarkers = true,
   style,
   initialLocation = {
     // 기본 멋쟁이사자처럼 본사 광화문 좌표
@@ -43,10 +45,10 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
     zoom: 15,
   },
   showMosquitoInfo = true,
+
 }) => {
   const [aedData, setAedData] = useState<AedInfo[]>([])
 
-  const [showMarkers, setShowMarkers] = useState(true)
   const [visibleMarkers, setVisibleMarkers] = useState<AedInfo[]>([])
 
   const [mosquitoData, setMosquitoData] = useState<MosquitoStatusData | null>(null)
@@ -205,12 +207,6 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
           </View>
         )}
       </View>
-      <TouchableOpacity
-        style={[styles.toggleButton, { bottom: 45, right: 15 }]}
-        onPress={() => setShowMarkers(!showMarkers)}
-      >
-        <Text style={{ fontSize: 20, opacity: showMarkers ? 1 : 0.4 }}>❤️</Text>
-      </TouchableOpacity>
     </View>
   )
 }

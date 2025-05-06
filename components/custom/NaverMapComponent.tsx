@@ -25,6 +25,7 @@ interface NaverMapComponentProps {
     zoom: number
   }
   showMosquitoInfo?: boolean
+  showDustInfo?: boolean
   showMarkers?: boolean
 }
 
@@ -36,7 +37,7 @@ interface AedInfo {
 }
 
 const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
-    showMarkers = true,
+  showMarkers = true,
   style,
   initialLocation = {
     // 기본 멋쟁이사자처럼 본사 광화문 좌표
@@ -45,7 +46,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
     zoom: 15,
   },
   showMosquitoInfo = true,
-
+  showDustInfo = true,
 }) => {
   const [aedData, setAedData] = useState<AedInfo[]>([])
 
@@ -192,18 +193,30 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
           ))}
       </NaverMapView>
       <View style={styles.overlay}>
-        <View style={[styles.badge, { backgroundColor: getAirQualityColor(airData?.GRADE) }]}>
+        {/* <View style={[styles.badge, { backgroundColor: getAirQualityColor(airData?.GRADE) }]}>
           <Text style={styles.badgeText}>{airData?.GRADE || 'N/A'}</Text>
-        </View>
+        </View> */}
 
         {showMosquitoInfo && (
           <View style={styles.mosquitoInfo}>
+            <Text style={styles.mosquitoText}>
+              ({new Date().toISOString().split('T')[0]})
+              {/* 모기지수 원래는 오늘 날짜 아님 어제 날짜 기준임*/}
+            </Text>
             <Text style={styles.mosquitoText}>
               수변부 모기지수: {mosquitoData?.MOSQUITO_VALUE_WATER || 'N/A'}
             </Text>
             <Text style={styles.mosquitoText}>
               공원 모기지수: {mosquitoData?.MOSQUITO_VALUE_PARK || 'N/A'}
             </Text>
+          </View>
+        )}
+        {showDustInfo && (
+          <View style={styles.mosquitoInfo}>
+            <Text style={styles.mosquitoText}>({new Date().toISOString().split('T')[0]})</Text>
+
+            <Text style={styles.mosquitoText}>미세먼지: {airData?.PM10 || 'N/A'} ㎍/㎥</Text>
+            <Text style={styles.mosquitoText}>초미세먼지: {airData?.PM25 || 'N/A'} ㎍/㎥</Text>
           </View>
         )}
       </View>
@@ -228,8 +241,8 @@ const styles = StyleSheet.create({
   },
   overlay: {
     position: 'absolute',
-    top: 20,
-    left: 20,
+    top: '15%',
+    left: '60%',
     alignItems: 'flex-start',
   },
   badge: {
@@ -243,11 +256,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   mosquitoInfo: {
-    position: 'absolute',
+    width: 150,
+    height: 80,
 
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    padding: 8,
-    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+
+    borderWidth: 1,
+
+    padding: 10,
+    borderRadius: 10,
   },
   mosquitoText: {
     fontSize: 12,

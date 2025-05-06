@@ -356,8 +356,9 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
                 align: 'Bottom',
                 textSize: 10,
               }}
-              width={20}
-              height={30}
+              image={require('@/assets/images/redmarker.png')}
+              width={38}
+              height={40}
               onTap={() => {
                 console.log(place.address)
                 setSelectedMarker(place)
@@ -376,7 +377,8 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
                 align: 'Bottom',
                 textSize: 10,
               }}
-              width={20}
+              image={require('@/assets/images/bluemarker.png')}
+              width={30}
               height={30}
               onTap={() => {
                 console.log(place.address)
@@ -396,7 +398,8 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
                 align: 'Bottom',
                 textSize: 10,
               }}
-              width={20}
+              image={require('@/assets/images/yellowmarker.png')}
+              width={30}
               height={30}
               onTap={() => {
                 console.log(place.address)
@@ -417,7 +420,8 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
                 align: 'Bottom',
                 textSize: 10,
               }}
-              width={20}
+              image={require('@/assets/images/greenmarker.png')}
+              width={22}
               height={30}
               onTap={() => {
                 console.log(place.address)
@@ -437,8 +441,9 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
                 align: 'Bottom',
                 textSize: 10,
               }}
-              width={20}
-              height={30}
+              image={require('@/assets/images/blackmarker.png')}
+              width={30}
+              height={32}
               onTap={() => {
                 console.log(place.address)
                 setSelectedMarker(place)

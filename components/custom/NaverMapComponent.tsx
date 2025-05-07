@@ -236,7 +236,7 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
         setEarthquakePlaces(parsedEarthquakePlaces)
         console.log('지진대피소 데이터 불러오기 성공')
       } catch (error) {
-        console.error('지진진대피소 데이터 불러오기 실패:', error)
+        console.error('지진대피소 데이터 불러오기 실패:', error)
       }
     }
 
@@ -524,9 +524,25 @@ const NaverMapComponent: React.FC<NaverMapComponentProps> = ({
           </View>
         )}
         {showDustInfo && (
-          <View style={styles.mosquitoInfo}>
+          <View style={[styles.mosquitoInfo, { height: 100 }]}>
             <Text style={styles.mosquitoText}>({new Date().toISOString().split('T')[0]})</Text>
-
+            <Text
+              style={[
+                styles.mosquitoText,
+                {
+                  color:
+                    airData?.PM25 !== undefined && Number(airData.PM25) <= 35
+                      ? '#0277BD'
+                      : airData?.PM25 !== undefined &&
+                        !isNaN(Number(airData.PM25)) &&
+                        Number(airData.PM25) <= 75
+                      ? '#EF6C00'
+                      : '#C62827',
+                },
+              ]}
+            >
+              대기질 지수: {airData?.GRADE || 'N/A'}
+            </Text>
             <Text style={styles.mosquitoText}>미세먼지: {airData?.PM10 || 'N/A'} ㎍/㎥</Text>
             <Text style={styles.mosquitoText}>초미세먼지: {airData?.PM25 || 'N/A'} ㎍/㎥</Text>
           </View>
@@ -553,7 +569,8 @@ const styles = StyleSheet.create({
   },
   overlay: {
     position: 'absolute',
-    top: '15%',
+    top: 55,
+    margin: 10,
     left: '60%',
     alignItems: 'flex-start',
   },
@@ -581,6 +598,7 @@ const styles = StyleSheet.create({
   mosquitoText: {
     fontSize: 12,
     color: '#333',
+    fontWeight: 'bold',
   },
   loader: {
     position: 'absolute',

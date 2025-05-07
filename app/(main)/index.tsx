@@ -42,6 +42,7 @@ const MainScreen = () => {
   const [showHotMarkers, setShowHotMarkers] = useState<boolean>(false)
   const [showEarthquakeMarkers, setShowEarthquakeMarkers] = useState<boolean>(false)
   const [showDustMarkers, setShowDustMarkers] = useState<boolean>(false)
+
   const handleMosquitoButtonPress = () => {
     setShowMosquitoInfo(true) // 모기 지수 표시
     setTimeout(() => {
@@ -372,6 +373,34 @@ const MainScreen = () => {
     }
   }
 
+  const API_KEY = process.env.EXPO_PUBLIC_SEOUL_API_KEY || 'YOUR_DEFAULT'
+  const [mosquitoData, setMosquitoData] = useState<any>(null)
+  const [airData, setAirData] = useState<any>(null)
+  const fetchData = async () => {
+    try {
+      const today = new Date()
+      const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`)
+      const date = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate() - 1)}`
+
+      const [mosquitoRes, airRes] = await Promise.all([
+        axios.get(`http://openapi.seoul.go.kr:8088/${API_KEY}/json/MosquitoStatus/1/5/${date}`),
+        axios.get(
+          `http://openAPI.seoul.go.kr:8088/${API_KEY}/json/ListAvgOfSeoulAirQualityService/1/1/`
+        ),
+      ])
+
+      setMosquitoData(mosquitoRes.data?.MosquitoStatus?.row[0])
+      setAirData(airRes.data?.ListAvgOfSeoulAirQualityService?.row[0])
+    } catch (error) {
+      console.error('API 호출 실패:', error)
+    } finally {
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
   return (
     <View style={styles.container}>
       {/* 지도 애니메이션 */}
@@ -401,7 +430,12 @@ const MainScreen = () => {
           >
             <Image
               source={require('@/assets/images/dustIcon.png')}
-              style={{ width: 35, height: 35 }}
+              style={{
+                width: 35,
+                height: 35,
+                tintColor:
+                  airData?.PM25 <= 35 ? '#0277BD' : airData?.PM25 <= 75 ? '#EF6C00' : '#C62827',
+              }}
             />
           </TouchableOpacity>
 
@@ -417,7 +451,16 @@ const MainScreen = () => {
           >
             <Image
               source={require('@/assets/images/mosquitosIcon.png')}
-              style={{ width: 35, height: 35 }}
+              style={{
+                width: 35,
+                height: 35,
+                tintColor:
+                  mosquitoData?.MOSQUITO_VALUE_WATER <= 30
+                    ? '#0277BD'
+                    : mosquitoData?.MOSQUITO_VALUE_WATER <= 65
+                    ? '#EF6C00'
+                    : '#C62827',
+              }}
             />
           </TouchableOpacity>
 
@@ -706,22 +749,23 @@ const styles = StyleSheet.create({
   },
   statusButtons: {
     backgroundColor: 'white',
-    borderRadius: 100,
-    borderColor: '#ccc',
-    borderWidth: 3,
+    //동그랗게
+    borderRadius: 50,
+
+    // 그림자 효과
+    shadowColor: 'black',
+    shadowOffset: { width: 0, height: 10 }, // 그림자를 아래로 이동
+    shadowOpacity: 0.3,
+    shadowRadius: 6, // 그림자 퍼짐 정도 조정
+    elevation: 5,
+
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 10,
     width: 45,
     height: 45,
   },
-  buttonContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    borderRadius: 8,
-    padding: 4,
-  },
+
   listOuterContainer: {
     flex: 1,
     backgroundColor: '#f8f8f8',
